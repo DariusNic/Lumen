@@ -1,0 +1,86 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Env
+.env
+.env.local
+*.local.env
+Imports
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+
+# ML artifacts (binary)
+ml_models/**/*.joblib
+ml_models/**/*.pkl
+
+# Logs
+logs/
+*.log
+
+# Mongo dump
+dump/
+
+# Playwright MCP / test session artifacts (snapshots + screenshots)
+.playwright-mcp/
+/*.yml
+!/docker-compose.yml
+!/docker-compose.*.yml
+/*.png
+/*.jpg
+/*.jpeg
+
+# Local-only files — kept on disk, not shipped to the public repo.
+# README.md is the deliberate exception: it's the public-facing repo doc.
+/changes.md
+/Testing_Session.md
+/THESIS_V2_PLAN.md
+# Entire .claude/ folder (Claude Code project conventions + per-user
+# permission settings) stays local; never committed.
+.claude/
+
+# LaTeX build artifacts (regenerated on each compile — only sources are tracked)
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.nlo
+*.nls
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.upa
+*.upb
+_minted/
+_minted-*/
+*.data.minted/
+texput.log

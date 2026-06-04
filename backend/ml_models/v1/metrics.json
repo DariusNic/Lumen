@@ -1,0 +1,142 @@
+{
+  "model": "tfidf_lr",
+  "version": "v1",
+  "trained_at": "2026-05-28T10:39:51.636795",
+  "corpus": {
+    "path": "ml\\categorization\\data\\seed_corpus.csv",
+    "rows_total": 12150,
+    "rows_seed": 12150,
+    "rows_corrections": 0,
+    "rows_train": 9720,
+    "rows_test": 2430,
+    "categories": [
+      "Education",
+      "Entertainment",
+      "Groceries",
+      "Health",
+      "Housing",
+      "Investments",
+      "Other",
+      "Restaurants",
+      "Salary",
+      "Subscriptions",
+      "Transfer",
+      "Transport",
+      "Travel",
+      "Utilities"
+    ]
+  },
+  "hyperparameters": {
+    "vectorizer": {
+      "analyzer": "char_wb",
+      "ngram_range": [
+        3,
+        5
+      ],
+      "min_df": 2,
+      "max_df": 0.95,
+      "sublinear_tf": true
+    },
+    "classifier": {
+      "type": "LogisticRegression",
+      "C": 4.0,
+      "class_weight": "balanced",
+      "max_iter": 2000
+    },
+    "split": {
+      "test_size": 0.2,
+      "stratify": true
+    },
+    "random_state": 20260508
+  },
+  "metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_category": {
+      "Education": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 162
+      },
+      "Entertainment": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 151
+      },
+      "Groceries": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 198
+      },
+      "Health": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 154
+      },
+      "Housing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 151
+      },
+      "Investments": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 137
+      },
+      "Other": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 206
+      },
+      "Restaurants": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 310
+      },
+      "Salary": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 125
+      },
+      "Subscriptions": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 189
+      },
+      "Transfer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 115
+      },
+      "Transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 196
+      },
+      "Travel": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 179
+      },
+      "Utilities": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 157
+      }
+    }
+  }
+}

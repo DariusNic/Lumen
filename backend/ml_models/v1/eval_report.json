@@ -1,0 +1,312 @@
+{
+  "evaluated_at": "2026-05-08T09:07:29.552457",
+  "corpus": {
+    "path": "ml\\categorization\\data\\seed_corpus.csv",
+    "rows": 2872,
+    "categories": [
+      "Education",
+      "Entertainment",
+      "Groceries",
+      "Health",
+      "Housing",
+      "Investments",
+      "Other",
+      "Restaurants",
+      "Salary",
+      "Subscriptions",
+      "Transfer",
+      "Transport",
+      "Travel",
+      "Utilities"
+    ],
+    "merchants_total": 298
+  },
+  "random_split": {
+    "protocol": "random_split_80_20_stratified",
+    "rows_train": 2297,
+    "rows_test": 575,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_category": {
+      "Education": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 34
+      },
+      "Entertainment": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 38
+      },
+      "Groceries": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 46
+      },
+      "Health": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 38
+      },
+      "Housing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 31
+      },
+      "Investments": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 32
+      },
+      "Other": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 59
+      },
+      "Restaurants": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 58
+      },
+      "Salary": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 29
+      },
+      "Subscriptions": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 48
+      },
+      "Transfer": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 30
+      },
+      "Transport": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 50
+      },
+      "Travel": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 38
+      },
+      "Utilities": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 44
+      }
+    }
+  },
+  "merchant_holdout": {
+    "protocol": "merchant_holdout_stratified_group_kfold",
+    "n_folds": 5,
+    "rows_evaluated": 2872,
+    "train_merchants_per_fold_mean": 238.4,
+    "test_merchants_per_fold_mean": 59.6,
+    "fold_accuracy_mean": 0.4872548027643724,
+    "fold_accuracy_std": 0.059280995079799975,
+    "fold_macro_f1_mean": 0.5060905449291033,
+    "fold_macro_f1_std": 0.07784722291437497,
+    "aggregated_accuracy": 0.487116991643454,
+    "aggregated_macro_f1": 0.5225119474230808,
+    "per_category": {
+      "Education": {
+        "precision": 0.5192307692307693,
+        "recall": 0.3176470588235294,
+        "f1": 0.39416058394160586,
+        "support": 170
+      },
+      "Entertainment": {
+        "precision": 0.18716577540106952,
+        "recall": 0.18518518518518517,
+        "f1": 0.18617021276595744,
+        "support": 189
+      },
+      "Groceries": {
+        "precision": 0.423728813559322,
+        "recall": 0.32608695652173914,
+        "f1": 0.36855036855036855,
+        "support": 230
+      },
+      "Health": {
+        "precision": 0.7117117117117117,
+        "recall": 0.41578947368421054,
+        "f1": 0.5249169435215947,
+        "support": 190
+      },
+      "Housing": {
+        "precision": 0.8899082568807339,
+        "recall": 0.6339869281045751,
+        "f1": 0.7404580152671756,
+        "support": 153
+      },
+      "Investments": {
+        "precision": 0.6934306569343066,
+        "recall": 0.59375,
+        "f1": 0.6397306397306397,
+        "support": 160
+      },
+      "Other": {
+        "precision": 0.2608695652173913,
+        "recall": 0.38513513513513514,
+        "f1": 0.31105047748976805,
+        "support": 296
+      },
+      "Restaurants": {
+        "precision": 0.35732647814910024,
+        "recall": 0.4793103448275862,
+        "f1": 0.40942562592047127,
+        "support": 290
+      },
+      "Salary": {
+        "precision": 0.8823529411764706,
+        "recall": 0.8333333333333334,
+        "f1": 0.8571428571428571,
+        "support": 144
+      },
+      "Subscriptions": {
+        "precision": 0.6631016042780749,
+        "recall": 0.5166666666666667,
+        "f1": 0.5807962529274004,
+        "support": 240
+      },
+      "Transfer": {
+        "precision": 0.8205128205128205,
+        "recall": 0.8533333333333334,
+        "f1": 0.8366013071895425,
+        "support": 150
+      },
+      "Transport": {
+        "precision": 0.34951456310679613,
+        "recall": 0.576,
+        "f1": 0.4350453172205438,
+        "support": 250
+      },
+      "Travel": {
+        "precision": 0.5390625,
+        "recall": 0.3631578947368421,
+        "f1": 0.4339622641509434,
+        "support": 190
+      },
+      "Utilities": {
+        "precision": 0.6237623762376238,
+        "recall": 0.5727272727272728,
+        "f1": 0.5971563981042654,
+        "support": 220
+      }
+    }
+  },
+  "rule_coverage": {
+    "protocol": "rule_coverage",
+    "total_rows": 2872,
+    "matched_correct": 1835,
+    "matched_wrong": 26,
+    "unmatched": 1011,
+    "rule_correct_pct": 63.89,
+    "rule_wrong_pct": 0.91,
+    "passes_to_ml_pct": 35.2,
+    "per_category": {
+      "Education": {
+        "rows": 170,
+        "matched_correct_pct": 64.71,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 35.29
+      },
+      "Entertainment": {
+        "rows": 189,
+        "matched_correct_pct": 47.62,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 52.38
+      },
+      "Groceries": {
+        "rows": 230,
+        "matched_correct_pct": 52.17,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 47.83
+      },
+      "Health": {
+        "rows": 190,
+        "matched_correct_pct": 78.95,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 21.05
+      },
+      "Housing": {
+        "rows": 153,
+        "matched_correct_pct": 54.25,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 45.75
+      },
+      "Investments": {
+        "rows": 160,
+        "matched_correct_pct": 70.0,
+        "matched_wrong_pct": 10.0,
+        "unmatched_pct": 20.0
+      },
+      "Other": {
+        "rows": 296,
+        "matched_correct_pct": 0.0,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 100.0
+      },
+      "Restaurants": {
+        "rows": 290,
+        "matched_correct_pct": 62.07,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 37.93
+      },
+      "Salary": {
+        "rows": 144,
+        "matched_correct_pct": 83.33,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 16.67
+      },
+      "Subscriptions": {
+        "rows": 240,
+        "matched_correct_pct": 83.33,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 16.67
+      },
+      "Transfer": {
+        "rows": 150,
+        "matched_correct_pct": 93.33,
+        "matched_wrong_pct": 6.67,
+        "unmatched_pct": 0.0
+      },
+      "Transport": {
+        "rows": 250,
+        "matched_correct_pct": 76.0,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 24.0
+      },
+      "Travel": {
+        "rows": 190,
+        "matched_correct_pct": 84.21,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 15.79
+      },
+      "Utilities": {
+        "rows": 220,
+        "matched_correct_pct": 81.82,
+        "matched_wrong_pct": 0.0,
+        "unmatched_pct": 18.18
+      }
+    }
+  }
+}

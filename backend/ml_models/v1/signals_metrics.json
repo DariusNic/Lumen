@@ -1,0 +1,257 @@
+{
+  "model": "xgb_classifier",
+  "version": "v1",
+  "trained_at": "2026-05-24T13:07:34.508255",
+  "tickers": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "NVDA",
+    "META",
+    "TSLA",
+    "AVGO",
+    "ORCL",
+    "CRM",
+    "ADBE",
+    "CSCO",
+    "AMD",
+    "INTC",
+    "TXN",
+    "INTU",
+    "IBM",
+    "QCOM",
+    "NOW",
+    "AMAT",
+    "ADI",
+    "MU",
+    "LLY",
+    "UNH",
+    "JNJ",
+    "MRK",
+    "ABBV",
+    "TMO",
+    "ABT",
+    "DHR",
+    "AMGN",
+    "BMY",
+    "ELV",
+    "ISRG",
+    "GILD",
+    "SYK",
+    "VRTX",
+    "REGN",
+    "CI",
+    "ZTS",
+    "BSX",
+    "WMT",
+    "PG",
+    "COST",
+    "PEP",
+    "KO",
+    "MCD",
+    "NKE",
+    "PM",
+    "MDLZ",
+    "SBUX",
+    "TJX",
+    "MO",
+    "LOW",
+    "HD",
+    "JPM",
+    "V",
+    "MA",
+    "BAC",
+    "WFC",
+    "MS",
+    "GS",
+    "AXP",
+    "BLK",
+    "BX",
+    "SCHW",
+    "C",
+    "SPGI",
+    "PYPL",
+    "RTX",
+    "UPS",
+    "CAT",
+    "DE",
+    "BA",
+    "GE",
+    "LMT",
+    "HON",
+    "ETN",
+    "NSC",
+    "NFLX",
+    "DIS",
+    "CMCSA",
+    "VZ",
+    "T",
+    "XOM",
+    "CVX",
+    "COP",
+    "EOG",
+    "NEE",
+    "SO",
+    "DUK",
+    "PLD",
+    "AMT",
+    "EQIX",
+    "BRK-B",
+    "ACN",
+    "ADP",
+    "BKNG",
+    "FCX",
+    "LIN"
+  ],
+  "feature_columns": [
+    "ret_1d",
+    "ret_5d",
+    "ret_21d",
+    "rsi_14",
+    "stoch_k_14",
+    "stoch_d_14",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "ema_10_ratio",
+    "ema_21_ratio",
+    "ema_50_ratio",
+    "atr_14_pct",
+    "bb_pctb_20",
+    "bb_bandwidth_20",
+    "volume_z_21",
+    "obv_change_5",
+    "dow",
+    "month"
+  ],
+  "label_to_int": {
+    "SELL": 0,
+    "HOLD": 1,
+    "BUY": 2
+  },
+  "hyperparameters": {
+    "objective": "multi:softprob",
+    "num_class": 3,
+    "n_estimators": 400,
+    "max_depth": 5,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 4,
+    "reg_lambda": 1.0,
+    "random_state": 20260508,
+    "early_stopping_rounds": 30,
+    "eval_metric": "mlogloss",
+    "tree_method": "hist"
+  },
+  "split_dates": {
+    "train_end": "2023-07-01T00:00:00",
+    "val_end": "2024-01-01T00:00:00"
+  },
+  "best_iteration": 109,
+  "splits": {
+    "train": {
+      "split": "train",
+      "rows": 108300,
+      "date_from": "2019-03-14T00:00:00",
+      "date_to": "2023-06-30T00:00:00",
+      "label_distribution": {
+        "BUY": 33946,
+        "HOLD": 48022,
+        "SELL": 26332
+      },
+      "accuracy": 0.4964542936288089,
+      "macro_f1": 0.4858037623381704,
+      "sharpe": 1.4996011952418116,
+      "per_class": {
+        "SELL": {
+          "precision": 0.3923241590214067,
+          "recall": 0.487201883639678,
+          "f1": 0.43464561593711887,
+          "support": 26332
+        },
+        "HOLD": {
+          "precision": 0.5859811809627711,
+          "recall": 0.536878930490192,
+          "f1": 0.5603564442512498,
+          "support": 48022
+        },
+        "BUY": {
+          "precision": 0.4795582558065945,
+          "recall": 0.44644435279561656,
+          "f1": 0.46240922682614266,
+          "support": 33946
+        }
+      }
+    },
+    "validation": {
+      "split": "validation",
+      "rows": 12600,
+      "date_from": "2023-07-03T00:00:00",
+      "date_to": "2023-12-29T00:00:00",
+      "label_distribution": {
+        "BUY": 3698,
+        "HOLD": 6040,
+        "SELL": 2862
+      },
+      "accuracy": 0.48793650793650795,
+      "macro_f1": 0.4164912973434995,
+      "sharpe": 0.9949141255007607,
+      "per_class": {
+        "SELL": {
+          "precision": 0.35984848484848486,
+          "recall": 0.19916142557651992,
+          "f1": 0.2564102564102564,
+          "support": 2862
+        },
+        "HOLD": {
+          "precision": 0.5427885223107066,
+          "recall": 0.7109271523178808,
+          "f1": 0.6155831123216974,
+          "support": 6040
+        },
+        "BUY": {
+          "precision": 0.41352657004830917,
+          "recall": 0.3472147106544078,
+          "f1": 0.37748052329854476,
+          "support": 3698
+        }
+      }
+    },
+    "test": {
+      "split": "test",
+      "rows": 58900,
+      "date_from": "2024-01-02T00:00:00",
+      "date_to": "2026-05-07T00:00:00",
+      "label_distribution": {
+        "BUY": 17864,
+        "HOLD": 27000,
+        "SELL": 14036
+      },
+      "accuracy": 0.4026994906621392,
+      "macro_f1": 0.3732824613598822,
+      "sharpe": -0.17419332150968006,
+      "per_class": {
+        "SELL": {
+          "precision": 0.25540795032320457,
+          "recall": 0.3575092618979766,
+          "f1": 0.29795445773832496,
+          "support": 14036
+        },
+        "HOLD": {
+          "precision": 0.540580367263659,
+          "recall": 0.5298888888888889,
+          "f1": 0.535181236673774,
+          "support": 27000
+        },
+        "BUY": {
+          "precision": 0.3436302494721201,
+          "recall": 0.24596954769368562,
+          "f1": 0.28671168966754756,
+          "support": 17864
+        }
+      }
+    }
+  }
+}
