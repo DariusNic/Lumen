@@ -44,40 +44,7 @@ export interface AccountsListResponse {
   totals: AccountTotals;
 }
 
-export interface AccountCreatePayload {
-  name: string;
-  type: AccountType;
-  balance?: number;
-  currency: Currency;
-  notes?: string | null;
-}
-
-export interface AccountUpdatePayload {
-  name?: string;
-  type?: AccountType;
-  balance?: number;
-  currency?: Currency;
-  notes?: string | null;
-}
-
 export async function listAccounts(): Promise<AccountsListResponse> {
   const res = await apiClient.get<AccountsListResponse>("/accounts");
   return res.data;
-}
-
-export async function createAccount(payload: AccountCreatePayload): Promise<Account> {
-  const res = await apiClient.post<{ account: Account }>("/accounts", payload);
-  return res.data.account;
-}
-
-export async function updateAccount(
-  id: string,
-  payload: AccountUpdatePayload,
-): Promise<Account> {
-  const res = await apiClient.patch<{ account: Account }>(`/accounts/${id}`, payload);
-  return res.data.account;
-}
-
-export async function deleteAccount(id: string): Promise<void> {
-  await apiClient.delete(`/accounts/${id}`);
 }

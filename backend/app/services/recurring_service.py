@@ -574,20 +574,34 @@ def materialize_due(
         # On the final cycle (saved would otherwise overshoot the target),
         # the contribution is clamped to the remaining amount.
         if doc.get("goal_id"):
+            # Concurrency guard (same rationale as the regular path below):
+            # claim the row by flipping `status` to a sentinel before doing
+            # the work; if the claim fails, another process is already
+            # handling it.
             n_created, n_rolled, n_completed, new_next_due, finished = _materialize_goal_recurring(
-                doc, now=now,
+                doc, now=now, coll=coll,
             )
             created += n_created
             rolled += n_rolled
             completed += n_completed
-            updates: dict[str, Any] = {"next_due": new_next_due, "updated_at": now}
             if finished:
-                updates["status"] = "completed"
-            coll.update_one({"_id": doc["_id"]}, {"$set": updates})
+                # status is updated inside _materialize_goal_recurring's
+                # final cycle when target hit; here just stamp updated_at.
+                coll.update_one(
+                    {"_id": doc["_id"]},
+                    {"$set": {"status": "completed", "updated_at": now}},
+                )
             continue
 
         if freq == "once":
-            # Single-shot: create one transaction at next_due, then complete.
+            # Single-shot: atomically claim by flipping status to "completed",
+            # then create the transaction. Loser of the race skips silently.
+            claim = coll.find_one_and_update(
+                {"_id": doc["_id"], "status": "active"},
+                {"$set": {"status": "completed", "updated_at": now}},
+            )
+            if claim is None:
+                continue
             tx_service.create(
                 user_id_str,
                 TransactionCreate(
@@ -601,15 +615,33 @@ def materialize_due(
             )
             created += 1
             completed += 1
-            coll.update_one(
-                {"_id": doc["_id"]},
-                {"$set": {"status": "completed", "updated_at": now}},
-            )
             continue
 
         # Recurring: catch up on every missed occurrence.
+        #
+        # Concurrency guard: the cron and the boot catch-up can both fire
+        # `materialize_due` within milliseconds of each other (different
+        # APScheduler job IDs, no shared lock). Both open their cursors
+        # before either has rolled `next_due` forward → both see the same
+        # overdue row → both used to create a transaction. Symptom seen on
+        # demo data: Salariu / Spotify duplicated, created_at deltas of 2-70 ms.
+        #
+        # Fix: advance `next_due` atomically *before* creating the tx, using
+        # a conditional filter on the previous value. The first writer wins;
+        # the second sees `matched_count == 0` and breaks out without
+        # duplicating. Trade-off: if `tx_service.create` raises after the
+        # claim succeeds, the cycle is silently dropped — but that's
+        # rare (FX outage etc.) and the user can re-mark-paid manually.
         cur = doc["next_due"]
         while cur <= now:
+            new_next_due = _add_cadence(cur, freq)
+            claim = coll.find_one_and_update(
+                {"_id": doc["_id"], "next_due": cur},
+                {"$set": {"next_due": new_next_due, "updated_at": now}},
+            )
+            if claim is None:
+                # Another process already advanced next_due for this row.
+                break
             tx_service.create(
                 user_id_str,
                 TransactionCreate(
@@ -622,13 +654,8 @@ def materialize_due(
                 ),
             )
             created += 1
-            cur = _add_cadence(cur, freq)
+            cur = new_next_due
             rolled += 1
-
-        coll.update_one(
-            {"_id": doc["_id"]},
-            {"$set": {"next_due": cur, "updated_at": now}},
-        )
 
     return {"created": created, "rolled": rolled, "completed": completed}
 
@@ -637,11 +664,12 @@ def _materialize_goal_recurring(
     doc: dict[str, Any],
     *,
     now: datetime,
+    coll: Any,
 ) -> tuple[int, int, int, datetime, bool]:
     """Process one cycle of a goal-linked recurring. Returns
     `(created, rolled, completed, new_next_due, finished)` so the
-    caller can write back the rolled `next_due` and `status` in a
-    single Mongo update.
+    caller can write back the `status` (next_due is rolled inside this
+    function, atomically).
 
     Each iteration of the catch-up loop re-reads the goal because each
     `_do_contribute` call updates `saved_amount` and may itself close
@@ -649,6 +677,11 @@ def _materialize_goal_recurring(
     soon as the goal is fully funded — and on the very last cycle,
     clamps the contribution to the exact remaining amount so the goal
     never overshoots its target.
+
+    Concurrency: each cycle is claimed atomically by advancing
+    `next_due` *before* the contribution lands. If a concurrent
+    materialize_due already advanced it, the claim returns None and
+    the loop exits — preventing duplicate contributions.
     """
     from app.services import goal_service
 
@@ -679,6 +712,18 @@ def _materialize_goal_recurring(
             finished = True
             completed += 1
             break
+
+        # Atomic claim: advance next_due before contributing. If the row's
+        # next_due has changed since we read it, another process owns this
+        # cycle.
+        new_next_due = _add_cadence(cur, freq)
+        claim = coll.find_one_and_update(
+            {"_id": doc["_id"], "next_due": cur},
+            {"$set": {"next_due": new_next_due, "updated_at": now}},
+        )
+        if claim is None:
+            break
+
         payment = min(monthly, remaining)
         goal_service._do_contribute(
             user_id=user_id_str,
@@ -695,6 +740,6 @@ def _materialize_goal_recurring(
             finished = True
             completed += 1
             break
-        cur = _add_cadence(cur, freq)
+        cur = new_next_due
 
     return (created, rolled, completed, cur, finished)

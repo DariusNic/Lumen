@@ -1,38 +1,24 @@
 """Accounts — feeds the Net Worth tracker (plan §9).
 
-Every user has three auto-seeded accounts at signup:
-  - **Cash** (manual; balance starts at 0; user edits freely)
-  - **Paper Portfolio** (auto-tracked; `source_ref="portfolio"`; balance is set
-    by the portfolio service when it lands in week 6)
-  - **Net cash flow** (auto-tracked; `source_ref="transactions:net"`; balance
-    is computed live as `sum(amount_base)` over all the user's transactions)
+Every user has two auto-seeded accounts at signup, both auto-tracked and
+read-only (the user never edits them directly):
+  - **Paper Portfolio** (`source_ref="portfolio"`; balance is the live
+    mark-to-market of the simulated holdings, in USD)
+  - **Net cash flow** (`source_ref="transactions:net"`; balance is computed
+    live as `sum(amount_base)` over all the user's transactions)
 
-Manual accounts the user can add: real estate, vehicles, credit cards, loans,
-mortgages, etc. Automatic accounts can't be deleted.
+There are no manual/user-created accounts — net worth is derived entirely
+from these two automatic sources.
 """
 from typing import Any
 
 from bson import ObjectId
-from pymongo import ReturnDocument
 
 from app.extensions import mongo
-from app.models.account import (
-    ASSET_TYPES,
-    AccountCreate,
-    AccountPublic,
-    AccountUpdate,
-    category_for,
-)
+from app.models.account import AccountPublic, category_for
 from app.models.user import utcnow
 from app.services import fx_service
-from app.utils.errors import AppError, NotFoundError, ValidationError
-
-
-def _oid(account_id: str) -> ObjectId:
-    try:
-        return ObjectId(account_id)
-    except Exception as e:
-        raise NotFoundError("Account not found") from e
+from app.utils.errors import AppError
 
 
 def _net_cashflow_balance(user_id: str) -> float:
@@ -46,8 +32,8 @@ def _net_cashflow_balance(user_id: str) -> float:
 
 
 def _hydrate_balance(user_id: str, doc: dict[str, Any]) -> dict[str, Any]:
-    """Replace stored balance with a live computation when the account is
-    a derived auto-account.
+    """Replace stored balance with a live computation for the derived
+    auto-accounts.
 
     Two derived flavors:
       - `transactions:net`  → sum of `amount_base` over the user's transactions
@@ -85,7 +71,7 @@ def _to_public(doc: dict[str, Any]) -> AccountPublic:
 # ---------------------------------------------------------------------------
 
 def seed_defaults(user_id: str, base_currency: str) -> None:
-    """Insert Cash + Paper Portfolio + Net cash flow for a brand-new user.
+    """Insert Paper Portfolio + Net cash flow for a brand-new user.
 
     Idempotent — bails if the user already has any non-deleted account, so
     it's safe to call on every login (self-healing backfill for accounts
@@ -100,25 +86,12 @@ def seed_defaults(user_id: str, base_currency: str) -> None:
     docs = [
         {
             "user_id": ObjectId(user_id),
-            "name": "Cash",
-            "type": "cash",
-            "balance": 0.0,
-            "currency": base_currency,
-            "is_automatic": False,
-            "source_ref": None,
-            "notes": None,
-            "deleted_at": None,
-            "last_updated": now,
-            "created_at": now,
-        },
-        {
-            "user_id": ObjectId(user_id),
             "name": "Paper Portfolio",
             "type": "investment",
             "balance": 0.0,
             "currency": "USD",
             "is_automatic": True,
-            "source_ref": "portfolio",  # week-6 portfolio service will hydrate
+            "source_ref": "portfolio",  # hydrated live from the portfolio service
             "notes": None,
             "deleted_at": None,
             "last_updated": now,
@@ -142,7 +115,7 @@ def seed_defaults(user_id: str, base_currency: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# CRUD
+# Reads
 # ---------------------------------------------------------------------------
 
 def list_for_user(user_id: str) -> list[AccountPublic]:
@@ -150,102 +123,6 @@ def list_for_user(user_id: str) -> list[AccountPublic]:
         {"user_id": ObjectId(user_id), "deleted_at": None},
     ).sort([("is_automatic", -1), ("created_at", 1)])
     return [_to_public(_hydrate_balance(user_id, d)) for d in cursor]
-
-
-def get(user_id: str, account_id: str) -> AccountPublic:
-    doc = mongo.db["accounts"].find_one(
-        {"_id": _oid(account_id), "user_id": ObjectId(user_id), "deleted_at": None}
-    )
-    if not doc:
-        raise NotFoundError("Account not found")
-    return _to_public(_hydrate_balance(user_id, doc))
-
-
-def create(user_id: str, payload: AccountCreate) -> AccountPublic:
-    coll = mongo.db["accounts"]
-    name = payload.name.strip()
-    existing = coll.find_one(
-        {"user_id": ObjectId(user_id), "name": name, "deleted_at": None}
-    )
-    if existing:
-        raise ValidationError(
-            "An account with this name already exists",
-            details={"field": "name"},
-        )
-    now = utcnow()
-    doc = {
-        "user_id": ObjectId(user_id),
-        "name": name,
-        "type": payload.type,
-        "balance": float(payload.balance),
-        "currency": payload.currency,
-        "is_automatic": False,
-        "source_ref": None,
-        "notes": payload.notes.strip() if payload.notes else None,
-        "deleted_at": None,
-        "last_updated": now,
-        "created_at": now,
-    }
-    res = coll.insert_one(doc)
-    doc["_id"] = res.inserted_id
-    return _to_public(doc)
-
-
-def update(user_id: str, account_id: str, payload: AccountUpdate) -> AccountPublic:
-    cur = mongo.db["accounts"].find_one(
-        {"_id": _oid(account_id), "user_id": ObjectId(user_id), "deleted_at": None}
-    )
-    if not cur:
-        raise NotFoundError("Account not found")
-    if cur.get("is_automatic"):
-        raise ValidationError(
-            "Auto-tracked accounts can't be edited directly",
-            details={"field": "is_automatic"},
-        )
-    update_doc = payload.model_dump(exclude_none=True)
-    if "name" in update_doc:
-        update_doc["name"] = update_doc["name"].strip()
-        # uniqueness check against the user's other accounts
-        clash = mongo.db["accounts"].find_one(
-            {
-                "user_id": ObjectId(user_id),
-                "name": update_doc["name"],
-                "deleted_at": None,
-                "_id": {"$ne": cur["_id"]},
-            }
-        )
-        if clash:
-            raise ValidationError(
-                "An account with this name already exists",
-                details={"field": "name"},
-            )
-    if "balance" in update_doc:
-        update_doc["balance"] = float(update_doc["balance"])
-    if "notes" in update_doc:
-        update_doc["notes"] = update_doc["notes"].strip() if update_doc["notes"] else None
-    if not update_doc:
-        return _to_public(cur)
-    update_doc["last_updated"] = utcnow()
-    doc = mongo.db["accounts"].find_one_and_update(
-        {"_id": cur["_id"]},
-        {"$set": update_doc},
-        return_document=ReturnDocument.AFTER,
-    )
-    return _to_public(doc)
-
-
-def delete(user_id: str, account_id: str) -> None:
-    cur = mongo.db["accounts"].find_one(
-        {"_id": _oid(account_id), "user_id": ObjectId(user_id), "deleted_at": None}
-    )
-    if not cur:
-        raise NotFoundError("Account not found")
-    if cur.get("is_automatic"):
-        raise ValidationError("Auto-tracked accounts can't be deleted")
-    mongo.db["accounts"].update_one(
-        {"_id": cur["_id"]},
-        {"$set": {"deleted_at": utcnow()}},
-    )
 
 
 def totals(user_id: str) -> dict[str, Any]:

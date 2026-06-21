@@ -1,8 +1,8 @@
 """Generate alerts on-demand from current state.
 
 No scheduled job, no materialized rows: every `GET /alerts` request rebuilds
-the list from the underlying data (budgets, forecast, goals, recurring,
-accounts) and applies the user's persisted "read" state from the
+the list from the underlying data (budgets, goals, recurring payments) and
+applies the user's persisted "read" state from the
 `alert_states` collection. This keeps alerts perfectly in sync with the
 data — when a budget overrun goes away because the user re-categorized a
 transaction, the alert disappears with no cleanup job needed.
@@ -29,10 +29,6 @@ log = logging.getLogger(__name__)
 # it as a reminder. Single global cutoff — there's intentionally no per-row
 # override (the form doesn't expose one).
 RECURRING_REMINDER_DAYS = 7
-
-# Manual accounts that haven't been touched in this many days emit a "stale
-# valuation" warning.
-STALE_ACCOUNT_DAYS = 90
 
 # Budget overrun thresholds (% of monthly budget consumed).
 BUDGET_OVERRUN_PCT = 1.0   # >= 100% → critical
@@ -69,7 +65,6 @@ def list_for_user(user_id: str) -> dict[str, Any]:
         _budget_overruns,
         _goal_status,
         _recurring_due,
-        _stale_accounts,
     ):
         try:
             alerts.extend(rule(user_id, now))
@@ -269,42 +264,6 @@ def _recurring_due(user_id: str, now: datetime) -> list[AlertPublic]:
                 unread=True,
                 link="/recurring",
                 source="recurring_due",
-            )
-        )
-    return out
-
-
-def _stale_accounts(user_id: str, now: datetime) -> list[AlertPublic]:
-    """Manual accounts not refreshed in over 90 days."""
-    cutoff = now - timedelta(days=STALE_ACCOUNT_DAYS)
-    cursor = mongo.db["accounts"].find(
-        {
-            "user_id": ObjectId(user_id),
-            "deleted_at": None,
-            "is_automatic": False,
-            "last_updated": {"$lte": cutoff},
-        }
-    )
-
-    out: list[AlertPublic] = []
-    for a in cursor:
-        last: datetime = a["last_updated"]
-        months = max(1, (now - last).days // 30)
-        out.append(
-            AlertPublic(
-                id=f"stale_account:{a['_id']}",
-                severity="warning",
-                icon="wallet",
-                title=f"{a.get('name', 'Account')} valuation is {months} months old",
-                message=(
-                    f"This balance hasn't been refreshed since "
-                    f"{last.strftime('%b %Y')}. Refresh it for accurate net worth."
-                ),
-                timestamp=last,
-                group="Earlier",
-                unread=True,
-                link="/networth",
-                source="stale_account",
             )
         )
     return out

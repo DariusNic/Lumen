@@ -49,7 +49,7 @@ def test_current_networth_for_fresh_user_includes_paper_portfolio(client):
     res = client.get("/api/networth", headers=headers)
     assert res.status_code == 200
     data = res.get_json()
-    # Fresh user has 3 seeded auto accounts: Cash 0, Net cf 0, Paper
+    # Fresh user has 2 seeded auto accounts: Net cash flow 0, and Paper
     # Portfolio with $10K USD seed → ~44k RON (varies with FX rate).
     pp = _paper_portfolio_base(client, headers, "RON")
     assert data["total_assets"] == pp
@@ -58,7 +58,7 @@ def test_current_networth_for_fresh_user_includes_paper_portfolio(client):
     assert data["base_currency"] == "RON"
     assert data["snapshot_count"] == 0
     assert data["delta_30d"] is None
-    assert len(data["breakdown"]) == 3
+    assert len(data["breakdown"]) == 2
 
 
 def test_current_networth_reflects_transactions(client):
@@ -74,23 +74,6 @@ def test_current_networth_reflects_transactions(client):
     assert data["net_worth"] == round(5000 + pp, 2)
     assert data["total_assets"] == round(5000 + pp, 2)
     assert data["total_liabilities"] == 0
-
-
-def test_current_networth_includes_manual_accounts(client):
-    body = _register(client)
-    headers = _auth(body["access_token"])
-    client.post("/api/accounts", json={
-        "name": "Apartment", "type": "real_estate", "balance": 90000, "currency": "RON",
-    }, headers=headers)
-    client.post("/api/accounts", json={
-        "name": "Car loan", "type": "loan", "balance": 15000, "currency": "RON",
-    }, headers=headers)
-
-    data = client.get("/api/networth", headers=headers).get_json()
-    pp = _paper_portfolio_base(client, headers, "RON")
-    assert data["total_assets"] == round(90000 + pp, 2)
-    assert data["total_liabilities"] == 15000
-    assert data["net_worth"] == round(75000 + pp, 2)
 
 
 def test_current_networth_requires_auth(client):
@@ -134,16 +117,19 @@ def test_manual_snapshot_idempotent_per_day(client):
 def test_snapshot_picks_up_breakdown(client):
     body = _register(client)
     headers = _auth(body["access_token"])
-    client.post("/api/accounts", json={
-        "name": "Apartment", "type": "real_estate", "balance": 92000, "currency": "RON",
+    # A salary makes the Net cash flow account a meaningful, non-zero entry.
+    client.post("/api/transactions", json={
+        "date": _past(1), "amount": 3000, "currency": "RON", "description": "Salariu",
     }, headers=headers)
 
     snap = client.post("/api/networth/snapshot", headers=headers).get_json()["snapshot"]
     names = [b["name"] for b in snap["breakdown"]]
-    assert "Apartment" in names
-    apt = next(b for b in snap["breakdown"] if b["name"] == "Apartment")
-    assert apt["category"] == "asset"
-    assert apt["balance_base"] == 92000
+    # The two auto accounts always appear in the breakdown.
+    assert "Net cash flow" in names
+    assert "Paper Portfolio" in names
+    ncf = next(b for b in snap["breakdown"] if b["name"] == "Net cash flow")
+    assert ncf["category"] == "asset"
+    assert ncf["balance_base"] == 3000
 
 
 # ---------------------------------------------------------------------------

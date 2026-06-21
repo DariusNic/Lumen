@@ -346,24 +346,18 @@ def test_ensure_rates_for_past_date_hits_historical_endpoint(client):
 
 
 def test_account_totals_converted_to_base(client):
-    """A USD asset of $1000 + the auto-seeded Paper Portfolio ($10,000 cash)
-    on a RON base user → totals.assets ≈ $11,000 × (4.97 / 1.08) ≈ 50,620 RON
-    (using the mocked rate)."""
+    """The auto-seeded Paper Portfolio ($10,000 USD) on a RON base user →
+    totals.assets ≈ $10,000 × (4.97 / 1.08) ≈ 46,019 RON (using the mocked
+    rate). Exercises the USD→base FX conversion inside the totals endpoint."""
     body = _register(client)
     headers = _auth(body["access_token"])
 
     with _patch_frankfurter({"USD": 1.08, "RON": 4.97}):
-        # Add a USD savings account on top of the auto-seeded accounts.
-        client.post(
-            "/api/accounts",
-            json={"name": "US bank", "type": "savings", "balance": 1000, "currency": "USD"},
-            headers=headers,
-        )
         totals = client.get("/api/accounts", headers=headers).get_json()["totals"]
 
     assert totals["base_currency"] == "RON"
-    # Cash (0 RON) + Paper Portfolio ($10k USD) + Net cash flow (0 RON) + US bank ($1k USD).
-    expected_usd_in_ron = 11_000 * (4.97 / 1.08)
+    # Paper Portfolio ($10k USD) + Net cash flow (0 RON).
+    expected_usd_in_ron = 10_000 * (4.97 / 1.08)
     assert totals["assets"] == pytest.approx(expected_usd_in_ron, rel=1e-3)
     assert totals["liabilities"] == 0
     assert totals["mixed_currency"] is False

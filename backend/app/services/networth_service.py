@@ -8,10 +8,10 @@ UTC walks every user, recomputes net worth from the live `accounts` table
 Historical accuracy:
   - The auto **Net cash flow** account is reconstructed exactly at any past
     date by summing `amount_base` over transactions on or before that date.
-  - All other accounts (Cash, manual, Paper Portfolio) use their *current*
-    balance for historical points — we don't store per-day balance history
-    for them. Documented as a known limitation in Chapter 5; the Net cash
-    flow account is the dominant time-varying signal anyway.
+  - The **Paper Portfolio** account uses its *current* balance for historical
+    points — we don't store per-day balance history for it. Documented as a
+    known limitation in Chapter 5; the Net cash flow account is the dominant
+    time-varying signal anyway.
 """
 from __future__ import annotations
 
