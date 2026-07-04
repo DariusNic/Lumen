@@ -237,7 +237,7 @@ VITE v5.x  ready in xxx ms
 ➜  Local:   http://localhost:5173/
 ```
 
-Open http://localhost:5173/ — the landing page should appear. Click **Get started** and register. Registration auto-creates Cash + Paper Portfolio (with $10,000 of virtual cash) + Net cash flow accounts plus the 14 default categories.
+Open http://localhost:5173/ — the landing page should appear. Click **Get started** and register. Registration auto-creates Cash + Paper Portfolio (with $10,000 of virtual cash) accounts plus the 14 default categories.
 
 ---
 
@@ -355,13 +355,8 @@ Drop these into `.vscode/launch.json` if you want one-click debug:
 
 ## 12. Where to look next
 
-- **`.claude/Bachelor_Thesis_Plan_v3.md`** — full thesis plan, scope, endpoint catalogue, design rationale.
-- **`.claude/CLAUDE.md`** — coding conventions enforced across the codebase. Read before contributing.
-- **`changes.md`** — development log; every notable change gets an entry.
 - **`backend/app/api/`** — every HTTP endpoint, one blueprint per resource.
 - **`backend/app/services/`** — all business logic; no Flask imports allowed here.
 - **`frontend/src/pages/`** — one file per route.
 
 ---
-
-*Last updated: 2026-05-09. Tested on Windows 11, Python 3.11.9, Node 20.18.0, Docker Desktop 4.x, MongoDB 7.*
