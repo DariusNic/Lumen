@@ -1,6 +1,6 @@
 # Lumen — personal finance + AI-assisted stock investing
 
-Bachelor thesis project. Three-tier app:
+Three-tier monolithic app:
 
 - **Frontend** — Vite + React 18 + TypeScript + Tailwind + shadcn/ui (port 5173)
 - **Backend** — Flask 3 + Pydantic v2 + PyMongo (port 5000)
